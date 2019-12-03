@@ -54,7 +54,7 @@ func major(versions []*semver.Version, versionIdx int) string {
 	}
 	nextV := versions[versionIdx+1]
 	if nextV.Major>v.Major {
-		return fmt.Sprintf("%v",v.Minor)
+		return fmt.Sprintf("%v",v.Major)
 	}
 	// in other cases we shouldnt release major
 	// no major version applies
