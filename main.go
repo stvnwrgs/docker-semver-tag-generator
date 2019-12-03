@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -10,10 +11,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-func run(versionArg string) (versions []*semver.Version, versionIdx int) {
-	scanner := bufio.NewScanner(os.Stdin)
+func run(r io.Reader, versionArg string) (versions []*semver.Version, versionIdx int) {
+	scanner := bufio.NewScanner(r)
 	actualVersion := semver.New(versionArg)
-	
+
 	versions = append(versions, actualVersion)
 
 	for scanner.Scan() {
@@ -31,10 +32,10 @@ func run(versionArg string) (versions []*semver.Version, versionIdx int) {
 
 	versionIdx = indexOf(versions, actualVersion)
 
-	if versionIdx< 0 {
+	if versionIdx < 0 {
 		panic("oh no! how could that even happen?")
 	}
-	
+
 	return
 }
 
@@ -50,11 +51,11 @@ func indexOf(versions []*semver.Version, v *semver.Version) int {
 func major(versions []*semver.Version, versionIdx int) string {
 	v := versions[versionIdx]
 	if versionIdx == len(versions)-1 {
-		return fmt.Sprintf("%v",v.Major)
+		return fmt.Sprintf("%v", v.Major)
 	}
 	nextV := versions[versionIdx+1]
-	if nextV.Major>v.Major {
-		return fmt.Sprintf("%v",v.Major)
+	if nextV.Major > v.Major {
+		return fmt.Sprintf("%v", v.Major)
 	}
 	// in other cases we shouldnt release major
 	// no major version applies
@@ -64,17 +65,17 @@ func major(versions []*semver.Version, versionIdx int) string {
 func minor(versions []*semver.Version, versionIdx int) string {
 	v := versions[versionIdx]
 	if versionIdx == len(versions)-1 {
-		return fmt.Sprintf("%v.%v",v.Major,v.Minor)
+		return fmt.Sprintf("%v.%v", v.Major, v.Minor)
 	}
 	nextV := versions[versionIdx+1]
-	if nextV.Major>v.Major || nextV.Minor > v.Minor {
-		return fmt.Sprintf("%v.%v",v.Major,v.Minor)
+	if nextV.Major > v.Major || nextV.Minor > v.Minor {
+		return fmt.Sprintf("%v.%v", v.Major, v.Minor)
 	}
 
 	// no minor version applies
 
 	return ""
-} 
+}
 
 func main() {
 	app := cli.NewApp()
@@ -87,7 +88,7 @@ func main() {
 			Usage: "gets the major if the major is bigger",
 			Action: func(c *cli.Context) error {
 				fmt.Println("major", c.Args().First())
-				fmt.Println(major(run(c.Args().First())))
+				fmt.Println(major(run(os.Stdin, c.Args().First())))
 				return nil
 			},
 		},
@@ -96,7 +97,7 @@ func main() {
 			Usage: "gets the minor if the minor is bigger",
 			Action: func(c *cli.Context) error {
 				fmt.Println("minor", c.Args().First())
-				fmt.Println(minor(run(c.Args().First())))
+				fmt.Println(minor(run(os.Stdin, c.Args().First())))
 				return nil
 			},
 		},
