@@ -10,11 +10,11 @@ import (
 	"github.com/urfave/cli"
 )
 
-func run(versionArg string) string {
+func run(versionArg string) (versions []*semver.Version, versionIdx int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	actualVersion := semver.New(versionArg)
-	fmt.Println("Actual Version", actualVersion)
-	var versions []*semver.Version
+	
+	versions = append(versions, actualVersion)
 
 	for scanner.Scan() {
 		// fmt.Println(scanner.Text())
@@ -22,47 +22,67 @@ func run(versionArg string) string {
 		versions = append(versions, v)
 	}
 
-	semver.Sort(versions)
-	for _, s := range versions {
-		var latest *semver.Version
-		cmp := s.Compare(*actualVersion)
-		if cmp == -1 {
-			fmt.Println("less", s)
-
-		} else if cmp == 1 {
-			fmt.Println("latest is", latest)
-			if latest != nil {
-				fmt.Println("latest is", latest)
-				if latest.Compare(*actualVersion) >= 0 {
-					fmt.Println("winner ", actualVersion)
-				}
-			}
-			fmt.Println("bigger", s)
-		} else {
-			fmt.Println("same", s)
-		}
-		latest = s
-		fmt.Println("latest set to", latest)
-	}
-
 	if scanner.Err() != nil {
 		// handle error.
+		panic("scan fail")
 	}
-	return "asd"
+
+	semver.Sort(versions)
+
+	versionIdx = indexOf(versions, actualVersion)
+
+	if versionIdx< 0 {
+		panic("oh no! how could that even happen?")
+	}
+	
+	return
 }
+
+func indexOf(versions []*semver.Version, v *semver.Version) int {
+	for idx, s := range versions {
+		if s == v {
+			return idx
+		}
+	}
+	return -1
+}
+
+func major(versions []*semver.Version, versionIdx int) string {
+	v := versions[versionIdx]
+	if versionIdx == len(versions)-1 {
+		return fmt.Sprintf("%v",v.Major)
+	} 
+	// in other cases we shouldnt release major
+	// no major version applies
+	return ""
+}
+
+func minor(versions []*semver.Version, versionIdx int) string {
+	v := versions[versionIdx]
+	if versionIdx == len(versions)-1 {
+		return fmt.Sprintf("%v.%v",v.Major,v.Minor)
+	}
+	nextV := versions[versionIdx+1]
+	if nextV.Major>v.Major {
+		return fmt.Sprintf("%v.%v",v.Major,v.Minor)
+	}
+	// no minor version applies
+
+	return ""
+} 
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "greet"
 	app.Usage = "fight the loneliness!"
 
-	app.Commands = []*cli.Command{
+	app.Commands = []cli.Command{
 		{
 			Name:  "major",
 			Usage: "gets the major if the major is bigger",
 			Action: func(c *cli.Context) error {
-				fmt.Println("major")
-				fmt.Println(run(c.Args().First()))
+				fmt.Println("major", c.Args().First())
+				fmt.Println(major(run(c.Args().First())))
 				return nil
 			},
 		},
@@ -70,8 +90,8 @@ func main() {
 			Name:  "minor",
 			Usage: "gets the minor if the minor is bigger",
 			Action: func(c *cli.Context) error {
-				fmt.Println("minor")
-				fmt.Println(run(c.Args().First()))
+				fmt.Println("minor", c.Args().First())
+				fmt.Println(minor(run(c.Args().First())))
 				return nil
 			},
 		},
