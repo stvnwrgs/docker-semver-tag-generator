@@ -1,5 +1,7 @@
 on: release
 name: Build
+env:
+  GO111MODULE: on
 jobs:
   release-linux-386:
     name: release linux/386
