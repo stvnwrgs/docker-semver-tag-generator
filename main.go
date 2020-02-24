@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -83,6 +84,30 @@ func minor(versions []*semver.Version, versionIdx int) string {
 	return ""
 }
 
+func latest(r io.Reader) string {
+	var versions []*semver.Version
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		// fmt.Println(scanner.Text())
+		v := semver.New(scanner.Text())
+		versions = append(versions, v)
+	}
+
+	if scanner.Err() != nil {
+		// handle error.
+		panic("scan fail")
+	}
+
+	semver.Sort(versions)
+
+	b, _ := json.Marshal(versions[len(versions)-1])
+	// Convert bytes to string.
+	s := string(b)
+	// remove quotes
+	s = s[1 : len(s)-1]
+	return s
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "greet"
@@ -102,6 +127,14 @@ func main() {
 			Usage: "gets the minor if the minor is bigger",
 			Action: func(c *cli.Context) error {
 				fmt.Println(minor(run(os.Stdin, c.Args().First())))
+				return nil
+			},
+		},
+		{
+			Name:  "latest",
+			Usage: "gets the latest stable semantic version",
+			Action: func(c *cli.Context) error {
+				fmt.Println(string(latest(os.Stdin)))
 				return nil
 			},
 		},

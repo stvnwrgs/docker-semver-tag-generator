@@ -70,3 +70,11 @@ func TestVersionsMinor(t *testing.T) {
 		})
 	}
 }
+
+func TestVersionsLatest(t *testing.T) {
+	latestVersion := "3.0.0"
+	out := latest(strings.NewReader(versions))
+	if out != latestVersion {
+		t.Errorf("got %v, want %v", out, latestVersion)
+	}
+}
