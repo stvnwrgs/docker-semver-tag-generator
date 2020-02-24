@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var versions string = "1.0.0\n1.0.1\n1.1.0\n2.0.0\n1.1.2\n2.0.1\n1.2.0\n3.0.0\n2.1.0\n2.2.0"
+var versions string = "1.0.0\n1.0.1\n1.1.0\n2.0.0\n1.1.2\n2.0.1\n1.2.0\n3.0.0\n2.1.0\n2.2.0\n1.0.0-alpha+001"
 
 func TestVersionsMajor(t *testing.T) {
 
@@ -22,6 +22,9 @@ func TestVersionsMajor(t *testing.T) {
 		{"1.2.1", "1"},
 		{"2.1.1", ""},
 		{"4.0.0", "4"},
+		// should not give out prereleases, tags with meta info
+		{"1.0.0-alpha+001", ""},
+		{"2.1.2+pre1", ""},
 	}
 	for _, tt := range tests {
 		tt := tt // NOTE: https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
@@ -51,6 +54,9 @@ func TestVersionsMinor(t *testing.T) {
 		{"1.2.1", "1.2"},
 		{"2.1.1", "2.1"},
 		{"4.0.0", "4.0"},
+		// should not give out prereleases, tags with meta info
+		{"1.0.0-alpha+001", ""},
+		{"2.1.2+pre1", ""},
 	}
 	for _, tt := range tests {
 		tt := tt // NOTE: https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables

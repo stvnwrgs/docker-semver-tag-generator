@@ -50,6 +50,9 @@ func indexOf(versions []*semver.Version, v *semver.Version) int {
 
 func major(versions []*semver.Version, versionIdx int) string {
 	v := versions[versionIdx]
+	if v.PreRelease != "" || v.Metadata != "" {
+		return ""
+	}
 	if versionIdx == len(versions)-1 {
 		return fmt.Sprintf("%v", v.Major)
 	}
@@ -64,6 +67,9 @@ func major(versions []*semver.Version, versionIdx int) string {
 
 func minor(versions []*semver.Version, versionIdx int) string {
 	v := versions[versionIdx]
+	if v.PreRelease != "" || v.Metadata != "" {
+		return ""
+	}
 	if versionIdx == len(versions)-1 {
 		return fmt.Sprintf("%v.%v", v.Major, v.Minor)
 	}
@@ -87,7 +93,6 @@ func main() {
 			Name:  "major",
 			Usage: "gets the major if the major is bigger",
 			Action: func(c *cli.Context) error {
-				fmt.Println("major", c.Args().First())
 				fmt.Println(major(run(os.Stdin, c.Args().First())))
 				return nil
 			},
@@ -96,7 +101,6 @@ func main() {
 			Name:  "minor",
 			Usage: "gets the minor if the minor is bigger",
 			Action: func(c *cli.Context) error {
-				fmt.Println("minor", c.Args().First())
 				fmt.Println(minor(run(os.Stdin, c.Args().First())))
 				return nil
 			},
